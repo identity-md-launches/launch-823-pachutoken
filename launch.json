@@ -1,0 +1,17 @@
+{
+  "kind": "evm_project",
+  "token": {
+    "contract": "LaunchToken",
+    "name": "Pachu",
+    "symbol": "PACHU",
+    "decimals": 18
+  },
+  "contracts": [],
+  "pool": {
+    "pairedCurrency": "0x0000000000000000000000000000000000000000",
+    "fee": 3000,
+    "tickSpacing": 60,
+    "initialPrice": "79228162514264337593543950336"
+  },
+  "notes": "Token-only Pachu launch intended for Ethereum mainnet. LaunchToken in src/LaunchToken.sol has no constructor arguments or initialization calls. The factory supplies liquidity setup, MerkleDistributor and the initialization-only PoolInitializationGuard. Services must apply the approved 88% pool allocation and standard IMD distribution through launch policy. The manifest fee is an admission tier; live trading fees and the effective opening price come from protocol configuration, with initialPrice retained for legacy policies. Source publication, signed artifact linkage, admission, deployment and the public IPFS frontend are subsequent stages; this manifest does not attest to their completion."
+}
