@@ -295,34 +295,35 @@ contract LaunchTokenTest is Test {
     }
 
     function test_deployerAndStrangerHaveNoAdministrativeOrSupplyPowers() public {
-        string[19] memory signatures = [
-            "mint(address,uint256)",
-            "mint(uint256)",
-            "mint()",
-            "issue(uint256)",
-            "burn(uint256)",
-            "burnFrom(address,uint256)",
-            "owner()",
-            "setOwner(address)",
-            "transferOwnership(address)",
-            "renounceOwnership()",
-            "pause()",
-            "unpause()",
-            "upgradeTo(address)",
-            "upgradeToAndCall(address,bytes)",
-            "initialize(address)",
-            "setMinter(address)",
-            "setFee(uint256)",
-            "setBlacklist(address,bool)",
-            "selfdestruct(address)"
+        // Use valid argument encodings, including dynamic bytes. A malformed call could revert
+        // in the ABI decoder even if the unwanted administrative function actually existed.
+        bytes[19] memory calls = [
+            abi.encodeWithSignature("mint(address,uint256)", ALICE, uint256(1)),
+            abi.encodeWithSignature("mint(uint256)", uint256(1)),
+            abi.encodeWithSignature("mint()"),
+            abi.encodeWithSignature("issue(uint256)", uint256(1)),
+            abi.encodeWithSignature("burn(uint256)", uint256(1)),
+            abi.encodeWithSignature("burnFrom(address,uint256)", address(this), uint256(1)),
+            abi.encodeWithSignature("owner()"),
+            abi.encodeWithSignature("setOwner(address)", ALICE),
+            abi.encodeWithSignature("transferOwnership(address)", ALICE),
+            abi.encodeWithSignature("renounceOwnership()"),
+            abi.encodeWithSignature("pause()"),
+            abi.encodeWithSignature("unpause()"),
+            abi.encodeWithSignature("upgradeTo(address)", ALICE),
+            abi.encodeWithSignature("upgradeToAndCall(address,bytes)", ALICE, bytes("")),
+            abi.encodeWithSignature("initialize(address)", ALICE),
+            abi.encodeWithSignature("setMinter(address)", ALICE),
+            abi.encodeWithSignature("setFee(uint256)", uint256(1)),
+            abi.encodeWithSignature("setBlacklist(address,bool)", ALICE, true),
+            abi.encodeWithSignature("selfdestruct(address)", ALICE)
         ];
-        for (uint256 i; i < signatures.length; ++i) {
-            bytes memory data = abi.encodeWithSignature(signatures[i], ALICE, uint256(1));
-            (bool deployerOk,) = address(token).call(data);
-            assertFalse(deployerOk, signatures[i]);
+        for (uint256 i; i < calls.length; ++i) {
+            (bool deployerOk,) = address(token).call(calls[i]);
+            assertFalse(deployerOk, "deployer reached an administrative selector");
             vm.prank(ALICE);
-            (bool strangerOk,) = address(token).call(data);
-            assertFalse(strangerOk, signatures[i]);
+            (bool strangerOk,) = address(token).call(calls[i]);
+            assertFalse(strangerOk, "stranger reached an administrative selector");
             assertEq(token.totalSupply(), SUPPLY);
             assertEq(token.balanceOf(address(this)), SUPPLY);
             assertEq(token.balanceOf(ALICE), 0);
